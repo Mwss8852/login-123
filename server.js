@@ -1,49 +1,38 @@
-const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
+const BACKEND_URL = "https://login-123-1.onrender.com"; // seu backend no Render
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+async function cadastrar() {
+  const nome = document.getElementById("c_nome").value;
+  const email = document.getElementById("c_email").value;
+  const senha = document.getElementById("c_senha").value;
 
-// Caminho do arquivo
-const FILE_PATH = "./usuarios.json";
+  try {
+    const res = await fetch(`${BACKEND_URL}/cadastrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, email, senha })
+    });
 
-// Se o arquivo não existir, cria
-if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify([]));
+    const data = await res.json();
+    alert(data.mensagem || data.erro);
+  } catch (err) {
+    alert("Erro ao conectar com o servidor");
+  }
 }
 
-// Ler usuários do arquivo
-function lerUsuarios() {
-  const data = fs.readFileSync(FILE_PATH);
-  return JSON.parse(data);
+async function login() {
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, senha })
+    });
+
+    const data = await res.json();
+    alert(data.mensagem || data.erro);
+  } catch (err) {
+    alert("Erro ao conectar com o servidor");
+  }
 }
-
-// Salvar usuários no arquivo
-function salvarUsuarios(usuarios) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify(usuarios, null, 2));
-}
-
-// Rota para cadastrar usuário (LOGIN)
-app.post("/login", (req, res) => {
-  const { email, senha } = req.body;
-
-  const usuarios = lerUsuarios();
-
-  usuarios.push({ email, senha });
-
-  salvarUsuarios(usuarios);
-
-  res.json({ mensagem: "  salvo com sucesso!" });
-});
-
-// Rota para listar usuários
-app.get("/usuarios", (req, res) => {
-  const usuarios = lerUsuarios();
-  res.json(usuarios);
-});
-
-app.listen(3000, () =>
-  console.log("Servidor rodando em: http://localhost:3000")
-);
